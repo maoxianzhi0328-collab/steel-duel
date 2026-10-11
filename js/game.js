@@ -1827,7 +1827,9 @@ class Game {
 
         this.onlineClient.onCharSelected = (player, index) => {
             if (player !== this.onlineClient.localPlayerNum) {
-                const mechaName = this.mechaConfigs[index]?.name || '未知';
+                // 获取角色名称
+                const mechaType = this.mechaTypes[index];
+                const mechaName = mechaType ? (MECHA_CONFIG[mechaType]?.name || '未知') : '未知';
                 const statusEl = document.getElementById('onlineWaitingStatus');
                 if (statusEl) {
                     // 显示对方选择的角色
