@@ -315,28 +315,38 @@
             <div class="joystick-direction" id="joystickDirection"></div>
         </div>
 
-        <!-- 右侧:技能按钮组 -->
-        <div class="skill-buttons" id="skillButtons">
-            <button class="skill-btn defense" id="btnDefense">
-                <span class="btn-icon">🛡️</span>
-                <span class="btn-label">防御</span>
-            </button>
-            <button class="skill-btn attack" id="btnAttack">
-                <span class="btn-icon">⚔️</span>
-                <span class="btn-label">攻击</span>
-            </button>
-            <button class="skill-btn skill" id="btnSkill">
-                <span class="btn-icon">✨</span>
-                <span class="btn-label">技能</span>
-            </button>
-            <button class="skill-btn dash" id="btnDash">
-                <span class="btn-icon">💨</span>
-                <span class="btn-label">冲刺</span>
-            </button>
-            <button class="skill-btn pet" id="btnPet">
-                <span class="btn-icon">🐾</span>
-                <span class="btn-label">宠物</span>
-            </button>
+        <!-- 右侧:技能轮盘 -->
+        <div class="skill-wheel" id="skillWheel">
+            <!-- 方向指示器 -->
+            <div class="wheel-directions">
+                <div class="dir-item top" id="dirSkill">
+                    <span class="dir-icon">✨</span>
+                    <span class="dir-label">技能</span>
+                </div>
+                <div class="dir-item left" id="dirDash">
+                    <span class="dir-icon">💨</span>
+                    <span class="dir-label">冲刺</span>
+                </div>
+                <div class="dir-item right" id="dirDefense">
+                    <span class="dir-icon">🛡️</span>
+                    <span class="dir-label">防御</span>
+                </div>
+                <div class="dir-item bottom" id="dirPet">
+                    <span class="dir-icon">�</span>
+                    <span class="dir-label">宠物</span>
+                </div>
+            </div>
+            
+            <!-- 中心攻击按钮 -->
+            <div class="wheel-center" id="wheelCenter">
+                <div class="attack-ring">
+                    <span class="attack-icon">⚔️</span>
+                    <span class="attack-label">攻击</span>
+                </div>
+            </div>
+            
+            <!-- 滑动指示器 -->
+            <div class="wheel-indicator" id="wheelIndicator"></div>
         </div>
     </div>
 
