@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -314,28 +314,42 @@
             </div>
             <div class="joystick-direction" id="joystickDirection"></div>
         </div>
-
         <!-- 右侧:技能轮盘 -->
         <div class="skill-wheel" id="skillWheel">
-            <!-- 方向指示器 -->
-            <div class="wheel-directions">
-                <div class="dir-item top" id="dirSkill">
-                    <span class="dir-icon">✨</span>
-                    <span class="dir-label">技能</span>
-                </div>
-                <div class="dir-item left" id="dirDash">
-                    <span class="dir-icon">💨</span>
-                    <span class="dir-label">冲刺</span>
-                </div>
-                <div class="dir-item right" id="dirDefense">
-                    <span class="dir-icon">🛡️</span>
-                    <span class="dir-label">防御</span>
-                </div>
-                <div class="dir-item bottom" id="dirPet">
-                    <span class="dir-icon">�</span>
-                    <span class="dir-label">宠物</span>
-                </div>
-            </div>
+            <!-- 轮盘背景 -->
+            <div class="wheel-bg"></div>
+            
+            <!-- 上方：技能按钮 -->
+            <button class="wheel-btn wheel-btn-top" id="btnSkill">
+                <span class="wheel-icon">✨</span>
+                <span class="wheel-label">技能</span>
+            </button>
+            
+            <!-- 左方：冲刺按钮 -->
+            <button class="wheel-btn wheel-btn-left" id="btnDash">
+                <span class="wheel-icon">💨</span>
+                <span class="wheel-label">冲刺</span>
+            </button>
+            
+            <!-- 右方：防御按钮 -->
+            <button class="wheel-btn wheel-btn-right" id="btnDefense">
+                <span class="wheel-icon">🛡️</span>
+                <span class="wheel-label">防御</span>
+            </button>
+            
+            <!-- 下方：宠物按钮 -->
+            <button class="wheel-btn wheel-btn-bottom" id="btnPet">
+                <span class="wheel-icon">🐾</span>
+                <span class="wheel-label">宠物</span>
+            </button>
+            
+            <!-- 中心：攻击按钮 -->
+            <button class="wheel-btn wheel-btn-center" id="btnAttack">
+                <span class="wheel-icon">⚔️</span>
+                <span class="wheel-label">攻击</span>
+            </button>
+        </div>
+    </div>
             
             <!-- 中心攻击按钮 -->
             <div class="wheel-center" id="wheelCenter">

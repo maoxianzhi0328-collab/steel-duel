@@ -238,160 +238,85 @@ class TouchController {
     }
 
     /**
-     * **新设计：技能轮盘**
-     * 中心：攻击（点击触发）
-     * 上滑：角色技能
-     * 下滑：宠物技能
-     * 左滑：冲刺
-     * 右滑：防御（持续状态）
+     * **新设计：技能轮盘（5按钮固定布局）**
+     * 每个按钮直接点击触发
      */
     initSkillButtons() {
-        const wheelCenter = document.getElementById('wheelCenter');
-        const wheelIndicator = document.getElementById('wheelIndicator');
-        const dirItems = {
-            skill: document.getElementById('dirSkill'),
-            pet: document.getElementById('dirPet'),
-            dash: document.getElementById('dirDash'),
-            defense: document.getElementById('dirDefense')
-        };
+        // 攻击按钮（点击触发）
+        this.initWheelButton('btnAttack', 'attack', 'click');
+        
+        // 技能按钮（点击触发）
+        this.initWheelButton('btnSkill', 'skill', 'click');
+        
+        // 冲刺按钮（点击触发）
+        this.initWheelButton('btnDash', 'dash', 'click');
+        
+        // 防御按钮（持续状态）
+        this.initWheelButton('btnDefense', 'defense', 'hold');
+        
+        // 宠物技能按钮（点击触发）
+        this.initWheelButton('btnPet', 'pet', 'click');
+    }
 
-        if (!wheelCenter) return;
+    /**
+     * 初始化轮盘按钮
+     */
+    initWheelButton(id, action, triggerMode) {
+        const btn = document.getElementById(id);
+        if (!btn) return;
 
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let isTouching = false;
-        let currentDirection = null;
-        const threshold = 30; // 滑动阈值
+        if (triggerMode === 'click') {
+            // 点击触发模式
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.buttons[action] = true;
+                btn.classList.add('pressed');
 
-        // 触摸开始
-        wheelCenter.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const touch = e.touches[0];
-            touchStartX = touch.clientX;
-            touchStartY = touch.clientY;
-            isTouching = true;
-            currentDirection = null;
-
-            wheelCenter.classList.add('pressed');
-            if (navigator.vibrate) navigator.vibrate(10);
-        });
-
-        // 触摸移动
-        wheelCenter.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            if (!isTouching) return;
-
-            const touch = e.touches[0];
-            const dx = touch.clientX - touchStartX;
-            const dy = touch.clientY - touchStartY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            // 清除所有激活状态
-            Object.values(dirItems).forEach(item => {
-                if (item) item.classList.remove('active');
+                // 触觉反馈
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
             });
 
-            // 判断滑动方向
-            if (distance > threshold) {
-                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-                let newDirection = null;
-
-                // 上滑（-45° ~ 45°）
-                if (angle >= -135 && angle < -45) {
-                    newDirection = 'skill';
-                }
-                // 下滑（135° ~ 180° 或 -180° ~ -135°）
-                else if (angle >= 45 && angle <= 180) {
-                    newDirection = 'pet';
-                }
-                // 左滑（-180° ~ -135° 或 135° ~ 180°）
-                else if (angle < -45 || angle > 135) {
-                    newDirection = 'dash';
-                }
-                // 右滑（-45° ~ 45°）
-                else if (angle >= -45 && angle < 45) {
-                    newDirection = 'defense';
-                }
-
-                // 更新方向状态
-                if (newDirection !== currentDirection) {
-                    currentDirection = newDirection;
-                    if (dirItems[currentDirection]) {
-                        dirItems[currentDirection].classList.add('active');
-                    }
-                }
-
-                // 激活滑动指示器
-                if (wheelIndicator) {
-                    wheelIndicator.classList.add('active');
-                }
-            } else {
-                currentDirection = null;
-                if (wheelIndicator) {
-                    wheelIndicator.classList.remove('active');
-                }
-            }
-        });
-
-        // 触摸结束
-        wheelCenter.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            isTouching = false;
-            wheelCenter.classList.remove('pressed');
-
-            // 清除所有激活状态
-            Object.values(dirItems).forEach(item => {
-                if (item) item.classList.remove('active');
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.buttons[action] = false;
+                btn.classList.remove('pressed');
             });
 
-            if (wheelIndicator) {
-                wheelIndicator.classList.remove('active');
-            }
-
-            // 触发对应动作
-            if (currentDirection) {
-                if (currentDirection === 'defense') {
-                    // 防御是持续状态，touchend时关闭
-                    this.buttons[currentDirection] = true;
-                    setTimeout(() => {
-                        this.buttons[currentDirection] = false;
-                    }, 100);
-                } else {
-                    // 其他动作触发一次
-                    this.buttons[currentDirection] = true;
-                    setTimeout(() => {
-                        this.buttons[currentDirection] = false;
-                    }, 50);
-                }
-                if (navigator.vibrate) navigator.vibrate(20);
-            } else {
-                // 没有滑动，触发攻击
-                this.buttons.attack = true;
-                setTimeout(() => {
-                    this.buttons.attack = false;
-                }, 50);
-                if (navigator.vibrate) navigator.vibrate(15);
-            }
-        });
-
-        // 触摸取消
-        wheelCenter.addEventListener('touchcancel', (e) => {
-            e.preventDefault();
-            isTouching = false;
-            wheelCenter.classList.remove('pressed');
-            Object.values(dirItems).forEach(item => {
-                if (item) item.classList.remove('active');
+            btn.addEventListener('touchcancel', (e) => {
+                e.preventDefault();
+                this.buttons[action] = false;
+                btn.classList.remove('pressed');
             });
-            if (wheelIndicator) {
-                wheelIndicator.classList.remove('active');
-            }
-        });
+        } else {
+            // 持续状态模式（防御）
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.buttons[action] = true;
+                btn.classList.add('pressed');
+
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+            });
+
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.buttons[action] = false;
+                btn.classList.remove('pressed');
+            });
+
+            btn.addEventListener('touchcancel', (e) => {
+                e.preventDefault();
+                this.buttons[action] = false;
+                btn.classList.remove('pressed');
+            });
+        }
     }
 
     /**

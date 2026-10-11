@@ -1122,163 +1122,144 @@ canvas {
     opacity: 1;
 }
 
-/* ==================== 技能轮盘（新设计） ==================== */
+/* ==================== 技能轮盘（新设计：5按钮固定布局） ==================== */
 
 .skill-wheel {
     position: absolute;
     right: 40px;
     bottom: 40px;
-    width: 160px;
-    height: 160px;
+    width: 180px;
+    height: 180px;
     pointer-events: auto;
     touch-action: none;
 }
 
-/* 方向指示器容器 */
-.wheel-directions {
+/* 轮盘背景 */
+.wheel-bg {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    border-radius: 50%;
+    background: rgba(30, 30, 30, 0.5);
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 0 30px rgba(0, 0, 0, 0.3);
 }
 
-/* 四个方向项 */
-.dir-item {
+/* 轮盘按钮通用样式 */
+.wheel-btn {
     position: absolute;
-    width: 50px;
-    height: 50px;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 12px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    opacity: 0.6;
-    transition: opacity 0.2s, transform 0.2s, background 0.2s;
-}
-
-.dir-item .dir-icon {
-    font-size: 20px;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
-}
-
-.dir-item .dir-label {
-    font-size: 9px;
-    color: rgba(255, 255, 255, 0.8);
-    margin-top: 1px;
-}
-
-/* 四个方向的位置 */
-.dir-item.top {
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.dir-item.bottom {
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.dir-item.left {
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-.dir-item.right {
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-/* 方向项激活状态 */
-.dir-item.active {
-    opacity: 1;
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.1);
-}
-
-.dir-item.top.active {
-    transform: translateX(-50%) scale(1.1);
-}
-
-.dir-item.bottom.active {
-    transform: translateX(-50%) scale(1.1);
-}
-
-.dir-item.left.active {
-    transform: translateY(-50%) scale(1.1);
-}
-
-.dir-item.right.active {
-    transform: translateY(-50%) scale(1.1);
-}
-
-/* 中心攻击按钮 */
-.wheel-center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80px;
-    height: 80px;
+    font-weight: bold;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: transform 0.1s, box-shadow 0.1s;
+    cursor: pointer;
     pointer-events: auto;
     touch-action: manipulation;
 }
 
-.attack-ring {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(255, 107, 107, 0.95) 0%, rgba(204, 68, 68, 0.95) 100%);
-    border: 3px solid rgba(255, 255, 255, 0.4);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.2);
-    transition: transform 0.1s, box-shadow 0.1s;
+.wheel-btn .wheel-icon {
+    font-size: 20px;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
 }
 
-.attack-ring .attack-icon {
-    font-size: 32px;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-}
-
-.attack-ring .attack-label {
-    font-size: 11px;
+.wheel-btn .wheel-label {
+    font-size: 9px;
     color: rgba(255, 255, 255, 0.9);
-    margin-top: 2px;
+    margin-top: 1px;
+    font-weight: normal;
+}
+
+/* 中心按钮：攻击 */
+.wheel-btn-center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.95) 0%, rgba(204, 68, 68, 0.95) 100%);
+    z-index: 2;
+}
+
+.wheel-btn-center .wheel-icon {
+    font-size: 28px;
+}
+
+.wheel-btn-center .wheel-label {
+    font-size: 10px;
     font-weight: bold;
 }
 
-/* 攻击按钮按下效果 */
-.attack-ring:active,
-.wheel-center.pressed .attack-ring {
-    transform: scale(0.92);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-/* 滑动指示器 */
-.wheel-indicator {
-    position: absolute;
-    top: 50%;
+/* 上方按钮：技能 */
+.wheel-btn-top {
+    top: 0;
     left: 50%;
-    width: 100px;
-    height: 100px;
-    margin: -50px 0 0 -50px;
-    border-radius: 50%;
-    border: 3px solid rgba(255, 255, 255, 0);
-    pointer-events: none;
-    transition: border-color 0.1s;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(255, 170, 68, 0.9) 0%, rgba(204, 136, 34, 0.9) 100%);
 }
 
-.wheel-indicator.active {
-    border-color: rgba(255, 255, 255, 0.5);
+/* 左方按钮：冲刺 */
+.wheel-btn-left {
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(135deg, rgba(68, 221, 136, 0.9) 0%, rgba(34, 170, 102, 0.9) 100%);
+}
+
+/* 右方按钮：防御 */
+.wheel-btn-right {
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(135deg, rgba(107, 107, 255, 0.9) 0%, rgba(68, 68, 204, 0.9) 100%);
+}
+
+/* 下方按钮：宠物 */
+.wheel-btn-bottom {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(170, 136, 255, 0.9) 0%, rgba(136, 102, 221, 0.9) 100%);
+}
+
+/* 按钮按下效果 */
+.wheel-btn:active,
+.wheel-btn.pressed {
+    transform: translate(-50%, -50%) scale(0.9);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.wheel-btn-top:active,
+.wheel-btn-top.pressed {
+    transform: translateX(-50%) scale(0.9);
+}
+
+.wheel-btn-bottom:active,
+.wheel-btn-bottom.pressed {
+    transform: translateX(-50%) scale(0.9);
+}
+
+.wheel-btn-left:active,
+.wheel-btn-left.pressed {
+    transform: translateY(-50%) scale(0.9);
+}
+
+.wheel-btn-right:active,
+.wheel-btn-right.pressed {
+    transform: translateY(-50%) scale(0.9);
+}
+
+.wheel-btn-center:active,
+.wheel-btn-center.pressed {
+    transform: translate(-50%, -50%) scale(0.9);
 }
     border-radius: 50%;
 }
