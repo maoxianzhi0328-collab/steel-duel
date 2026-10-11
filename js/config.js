@@ -374,10 +374,14 @@ const PET_DATA = {
     }
 };
 
+// 为兼容旧代码，创建别名
+const MECHA_CONFIG = MECHA_DATA;
+
 // 导出配置（如果使用模块化）
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         MECHA_DATA,
+        MECHA_CONFIG,
         KEY_MAPPING,
         GAME_CONFIG,
         AUDIO_CONFIG,
