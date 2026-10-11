@@ -102,6 +102,12 @@ class OnlineClient {
      * 设置数据连接的事件处理
      */
     setupConnection(conn) {
+        // 检查连接是否已经打开（PeerJS 有时连接建立后立即就是 open 状态）
+        if (conn.open) {
+            this.connected = true;
+            if (this.onOpponentJoined) this.onOpponentJoined();
+        }
+
         conn.on('open', () => {
             this.connected = true;
             if (this.onOpponentJoined) this.onOpponentJoined();

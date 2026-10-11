@@ -1801,6 +1801,12 @@ class Game {
             document.getElementById('roomStatus').textContent = '对手已加入！请选择角色';
             document.getElementById('onlineRoom').classList.add('hidden');
             document.getElementById('onlineCharSelect').classList.remove('hidden');
+            // 显示等待提示
+            const statusEl = document.getElementById('onlineWaitingStatus');
+            if (statusEl) {
+                statusEl.textContent = '等待对手选择角色...';
+                statusEl.style.color = '#ffcc44';
+            }
             this.buildOnlineCharGrid();
         };
 
@@ -1813,11 +1819,20 @@ class Game {
                 readyBtn.textContent = '准备就绪';
                 readyBtn.disabled = false;
             }
+            const statusEl = document.getElementById('onlineWaitingStatus');
+            if (statusEl) {
+                statusEl.textContent = '';
+            }
         };
 
         this.onlineClient.onCharSelected = (player, index) => {
             if (player !== this.onlineClient.localPlayerNum) {
-                document.getElementById('onlineMechaName').textContent = '对手已选择';
+                const mechaName = this.mechaConfigs[index]?.name || '未知';
+                const statusEl = document.getElementById('onlineWaitingStatus');
+                if (statusEl) {
+                    statusEl.textContent = '对手已选择：' + mechaName;
+                    statusEl.style.color = '#88ff88';
+                }
             }
         };
 
@@ -1975,6 +1990,12 @@ class Game {
         if (btn) {
             btn.textContent = '已就绪，等待对手...';
             btn.disabled = true;
+        }
+        // 更新等待状态
+        const statusEl = document.getElementById('onlineWaitingStatus');
+        if (statusEl) {
+            statusEl.textContent = '等待对手准备...';
+            statusEl.style.color = '#ffcc44';
         }
     }
 
