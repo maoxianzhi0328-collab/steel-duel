@@ -25,8 +25,12 @@ class OnlineClient {
         this.isHost = false;        // 是否是房主
         this.localPlayerNum = 1;    // 本地玩家编号（房主=1，客机=2）
         this.roomCode = null;       // 房间号（即Peer ID的后半部分）
+        
+        // 状态管理
         this.localCharIndex = 0;    // 本地选择的角色
         this.localReady = false;    // 本地是否已就绪
+        this.remoteCharIndex = -1;  // 对方选择的角色（-1表示未选择）
+        this.remoteReady = false;   // 对方是否已就绪
 
         // 接收到的对手输入
         this.remoteInputs = {};
@@ -134,27 +138,46 @@ class OnlineClient {
     handleMessage(msg) {
         switch (msg.type) {
             case 'char_selected':
+                // 对方选择角色
+                this.remoteCharIndex = msg.index;
                 if (this.onCharSelected) this.onCharSelected(msg.player, msg.index);
                 break;
+
             case 'ready':
-                // 房主收到客机的ready
+                // 客机告诉房主：我已准备，这是我选择的角色
                 if (this.isHost) {
-                    // 房主自己也ready了，广播all_ready
-                    if (this.localReady) {
+                    this.remoteCharIndex = msg.charIndex;
+                    this.remoteReady = true;
+                    
+                    // 触发回调，让界面显示"对手已准备"
+                    if (this.onCharSelected) {
+                        this.onCharSelected(2, msg.charIndex);
+                    }
+                    
+                    // 检查是否双方都准备好了
+                    if (this.localReady && this.remoteReady) {
                         const p1Char = this.localCharIndex;
-                        const p2Char = msg.charIndex;
+                        const p2Char = this.remoteCharIndex;
+                        console.log('[房主] 双方都准备好，开始游戏', {p1Char, p2Char});
                         this.send({ type: 'all_ready', p1Char: p1Char, p2Char: p2Char });
                         if (this.onAllReady) this.onAllReady(p1Char, p2Char);
                     }
                 }
                 break;
+
             case 'all_ready':
-                if (this.onAllReady) this.onAllReady(msg.p1Char, msg.p2Char);
+                // 客机收到房主的"双方就绪"消息
+                if (!this.isHost) {
+                    console.log('[客机] 收到all_ready，开始游戏', msg);
+                    if (this.onAllReady) this.onAllReady(msg.p1Char, msg.p2Char);
+                }
                 break;
+
             case 'input':
                 this.remoteInputs[msg.frame] = msg.keys;
                 if (this.onOpponentInput) this.onOpponentInput(msg.frame, msg.keys);
                 break;
+
             case 'action':
                 if (this.onOpponentAction) this.onOpponentAction(msg.action);
                 break;
@@ -185,6 +208,9 @@ class OnlineClient {
         this.connected = false;
         this.roomCode = null;
         this.localReady = false;
+        this.remoteReady = false;
+        this.localCharIndex = 0;
+        this.remoteCharIndex = -1;
     }
 
     /**
@@ -200,12 +226,23 @@ class OnlineClient {
      */
     ready() {
         this.localReady = true;
+        
         if (this.isHost) {
-            // 房主：等待客机ready，暂时不做什么
-            // 当收到客机ready时，在handleMessage中处理
+            // 房主：检查客机是否已准备
+            if (this.remoteReady) {
+                // 双方都准备好了，开始游戏
+                const p1Char = this.localCharIndex;
+                const p2Char = this.remoteCharIndex;
+                console.log('[房主] 我已准备，客机也已准备，开始游戏', {p1Char, p2Char});
+                this.send({ type: 'all_ready', p1Char: p1Char, p2Char: p2Char });
+                if (this.onAllReady) this.onAllReady(p1Char, p2Char);
+            } else {
+                console.log('[房主] 我已准备，等待客机准备');
+            }
         } else {
-            // 客机：发送ready给房主
+            // 客机：发送 ready 给房主（包含自己选择的角色）
             this.send({ type: 'ready', charIndex: this.localCharIndex });
+            console.log('[客机] 发送ready消息，我选择的角色:', this.localCharIndex);
         }
     }
 
@@ -280,5 +317,19 @@ class OnlineClient {
      */
     isReady() {
         return this.connected;
+    }
+
+    /**
+     * 获取对方是否已选择角色
+     */
+    isOpponentCharSelected() {
+        return this.remoteCharIndex >= 0;
+    }
+
+    /**
+     * 获取对方是否已准备
+     */
+    isOpponentReady() {
+        return this.remoteReady;
     }
 }
