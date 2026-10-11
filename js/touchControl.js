@@ -12,6 +12,11 @@ class TouchController {
         this.joystickInput = { x: 0, y: 0 };
         this.joystickPressed = false;
 
+        // **优化：摇杆位置跟随手指**
+        this.joystickBasePos = { x: 40, y: 40 };  // 默认位置（离左下角40px）
+        this.joystickCenter = { x: 0, y: 0 };      // 摇杆圆心
+        this.joystickTouchId = null;               // 当前触摸ID
+
         // 技能按钮状态
         this.buttons = {
             attack: false,
@@ -58,6 +63,8 @@ class TouchController {
         if (touchControls) {
             touchControls.style.display = 'block';
         }
+        // 重置摇杆到默认位置
+        this.resetJoystickPosition();
     }
 
     /**
@@ -71,7 +78,33 @@ class TouchController {
     }
 
     /**
-     * 初始化虚拟摇杆
+     * 重置摇杆到默认位置（左下角40px）
+     */
+    resetJoystickPosition() {
+        const joystick = document.getElementById('moveJoystick');
+        if (!joystick) return;
+
+        // 获取屏幕尺寸
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+
+        // 摇杆容器尺寸
+        const joystickSize = 120; // 摇杆容器宽度
+
+        // 计算默认位置（离左下角40px）
+        this.joystickBasePos.x = 40;
+        this.joystickBasePos.y = 40;
+
+        // 设置摇杆位置
+        joystick.style.left = this.joystickBasePos.x + 'px';
+        joystick.style.bottom = this.joystickBasePos.y + 'px';
+        joystick.style.top = 'auto';
+        joystick.style.right = 'auto';
+        joystick.style.transform = 'none';
+    }
+
+    /**
+     * **优化后的虚拟摇杆** - 跟随手指移动
      */
     initJoystick() {
         const joystick = document.getElementById('moveJoystick');
@@ -81,32 +114,53 @@ class TouchController {
         if (!joystick || !stick) return;
 
         const maxDistance = 35; // 摇杆最大移动距离(像素)
-        let centerX = 0;
-        let centerY = 0;
+        const joystickSize = 120; // 摇杆容器宽度
+        const activeAreaWidth = window.innerWidth * 0.4; // 左侧40%屏幕作为激活区域
 
-        // 触摸开始
+        // 触摸开始 - 创建摇杆在手指位置
         joystick.addEventListener('touchstart', (e) => {
             e.preventDefault();
             e.stopPropagation();
 
+            const touch = e.touches[0];
+            this.joystickTouchId = touch.identifier;
             this.joystickPressed = true;
             joystick.classList.add('active');
 
-            const rect = joystick.getBoundingClientRect();
-            centerX = rect.left + rect.width / 2;
-            centerY = rect.top + rect.height / 2;
+            // 计算摇杆圆心（手指位置）
+            this.joystickCenter.x = touch.clientX;
+            this.joystickCenter.y = touch.clientY;
+
+            // 移动摇杆到手指位置
+            const newLeft = touch.clientX - joystickSize / 2;
+            const newTop = touch.clientY - joystickSize / 2;
+
+            joystick.style.left = newLeft + 'px';
+            joystick.style.top = newTop + 'px';
+            joystick.style.bottom = 'auto';
+            joystick.style.transform = 'none';
         });
 
-        // 触摸移动
+        // 触摸移动 - 更新摇杆位置
         joystick.addEventListener('touchmove', (e) => {
             e.preventDefault();
             e.stopPropagation();
 
             if (!this.joystickPressed) return;
 
-            const touch = e.touches[0];
-            let dx = touch.clientX - centerX;
-            let dy = touch.clientY - centerY;
+            // 找到对应的触摸点
+            let touch = null;
+            for (let i = 0; i < e.touches.length; i++) {
+                if (e.touches[i].identifier === this.joystickTouchId) {
+                    touch = e.touches[i];
+                    break;
+                }
+            }
+            if (!touch) return;
+
+            // 计算相对于摇杆圆心的偏移
+            let dx = touch.clientX - this.joystickCenter.x;
+            let dy = touch.clientY - this.joystickCenter.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             // 限制在圆内
@@ -139,17 +193,27 @@ class TouchController {
             }
         });
 
-        // 触摸结束
+        // 触摸结束 - 恢复默认位置
         joystick.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
 
-            this.joystickPressed = false;
-            joystick.classList.remove('active');
-            stick.style.transform = 'translate(-50%, -50%)';
+            // 检查是否是对应的触摸点结束
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === this.joystickTouchId) {
+                    this.joystickTouchId = null;
+                    this.joystickPressed = false;
+                    joystick.classList.remove('active');
+                    stick.style.transform = 'translate(-50%, -50%)';
 
-            this.joystickInput.x = 0;
-            this.joystickInput.y = 0;
+                    this.joystickInput.x = 0;
+                    this.joystickInput.y = 0;
+
+                    // 恢复到默认位置
+                    this.resetJoystickPosition();
+                    break;
+                }
+            }
         });
 
         // 触摸取消
@@ -157,13 +221,20 @@ class TouchController {
             e.preventDefault();
             e.stopPropagation();
 
+            this.joystickTouchId = null;
             this.joystickPressed = false;
             joystick.classList.remove('active');
             stick.style.transform = 'translate(-50%, -50%)';
 
             this.joystickInput.x = 0;
             this.joystickInput.y = 0;
+
+            // 恢复到默认位置
+            this.resetJoystickPosition();
         });
+
+        // 初始化摇杆位置
+        this.resetJoystickPosition();
     }
 
     /**
@@ -173,7 +244,7 @@ class TouchController {
         // 攻击按钮(点击触发)
         this.initButton('btnAttack', 'attack', 'click');
 
-        // 防御按钮(持续按住)
+        // 防御按钮(持续状态)
         this.initButton('btnDefense', 'defense', 'hold');
 
         // 技能按钮(点击触发)
@@ -189,47 +260,60 @@ class TouchController {
     /**
      * 初始化单个按钮
      */
-    initButton(elementId, action, triggerType) {
-        const btn = document.getElementById(elementId);
+    initButton(id, action, triggerMode) {
+        const btn = document.getElementById(id);
         if (!btn) return;
 
-        if (triggerType === 'click') {
-            // 点击触发
+        if (triggerMode === 'click') {
+            // 点击触发模式
             btn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 this.buttons[action] = true;
+                btn.classList.add('pressed');
 
-                // 添加视觉反馈
-                btn.classList.add('active');
-            });
-
-            btn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                btn.classList.remove('active');
-            });
-        } else if (triggerType === 'hold') {
-            // 持续按住
-            btn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.buttons[action] = true;
-                btn.classList.add('active');
+                // 触觉反馈
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
             });
 
             btn.addEventListener('touchend', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 this.buttons[action] = false;
-                btn.classList.remove('active');
+                btn.classList.remove('pressed');
             });
 
             btn.addEventListener('touchcancel', (e) => {
                 e.preventDefault();
+                this.buttons[action] = false;
+                btn.classList.remove('pressed');
+            });
+        } else {
+            // 持续状态模式
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.buttons[action] = true;
+                btn.classList.add('pressed');
+
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+            });
+
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 this.buttons[action] = false;
-                btn.classList.remove('active');
+                btn.classList.remove('pressed');
+            });
+
+            btn.addEventListener('touchcancel', (e) => {
+                e.preventDefault();
+                this.buttons[action] = false;
+                btn.classList.remove('pressed');
             });
         }
     }
@@ -238,85 +322,56 @@ class TouchController {
      * 初始化暂停按钮
      */
     initPauseButton() {
-        // 创建暂停按钮
-        const pauseBtn = document.createElement('div');
-        pauseBtn.className = 'pause-btn-mobile';
-        pauseBtn.id = 'pauseBtnMobile';
-        pauseBtn.innerHTML = '⏸️';
-        pauseBtn.style.display = 'flex';
-
-        document.body.appendChild(pauseBtn);
+        const pauseBtn = document.getElementById('pauseBtn');
+        if (!pauseBtn) return;
 
         pauseBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            // 暂停游戏逻辑(需要实现)
-            console.log('Game paused');
+            e.stopPropagation();
+
+            if (this.game.gameState === 'playing') {
+                this.game.pauseGame();
+            } else if (this.game.gameState === 'paused') {
+                this.game.resumeGame();
+            }
         });
     }
 
     /**
-     * 更新玩家移动
+     * 获取摇杆输入
      */
-    updatePlayerMovement(player) {
-        if (!this.isMobile || !this.joystickPressed) return;
-
-        // 死区检测
-        const deadZone = 0.15;
-        if (Math.abs(this.joystickInput.x) < deadZone && Math.abs(this.joystickInput.y) < deadZone) {
-            return;
-        }
-
-        // 根据摇杆输入设置速度
-        player.vx = this.joystickInput.x * player.speed;
-        player.vy = this.joystickInput.y * player.speed;
-
-        // 设置朝向(根据水平移动)
-        if (this.joystickInput.x > deadZone) {
-            player.facingRight = true;
-        } else if (this.joystickInput.x < -deadZone) {
-            player.facingRight = false;
-        }
+    getJoystickInput() {
+        return this.joystickInput;
     }
 
     /**
      * 获取按钮状态
      */
     getButtonState(action) {
-        const state = this.buttons[action];
-        this.buttons[action] = false; // 重置(仅对click类型)
-        return state;
+        return this.buttons[action] || false;
     }
 
     /**
-     * 更新按钮冷却显示
+     * 更新玩家移动
      */
-    updateButtonCooldown(action, cooldown, maxCooldown) {
-        const btnMap = {
-            'skill': 'btnSkill',
-            'pet': 'btnPet'
-        };
+    updatePlayerMovement(player) {
+        if (!this.joystickPressed || !player) return;
 
-        const btnId = btnMap[action];
-        if (!btnId) return;
+        // 将摇杆输入转换为方向键
+        const deadZone = 0.2;
+        const pressed = Math.abs(this.joystickInput.x) > deadZone || Math.abs(this.joystickInput.y) > deadZone;
 
-        const btn = document.getElementById(btnId);
-        if (!btn) return;
-
-        if (cooldown > 0) {
-            btn.classList.add('cooldown');
+        if (pressed) {
+            // 映射到WASD按键
+            this.game.keys['KeyA'] = this.joystickInput.x < -deadZone;
+            this.game.keys['KeyD'] = this.joystickInput.x > deadZone;
+            this.game.keys['KeyW'] = this.joystickInput.y < -deadZone;
+            this.game.keys['KeyS'] = this.joystickInput.y > deadZone;
         } else {
-            btn.classList.remove('cooldown');
-        }
-    }
-
-    /**
-     * 震动反馈(如果设备支持)
-     */
-    vibrate(duration = 50) {
-        if (!this.isMobile) return;
-
-        if (navigator.vibrate) {
-            navigator.vibrate(duration);
+            this.game.keys['KeyA'] = false;
+            this.game.keys['KeyD'] = false;
+            this.game.keys['KeyW'] = false;
+            this.game.keys['KeyS'] = false;
         }
     }
 }
