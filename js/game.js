@@ -1842,10 +1842,18 @@ class Game {
         this.onlineClient.onAllReady = (p1Char, p2Char) => {
             // 双方就绪，开始游戏
             console.log('[game.js] onAllReady 触发', {p1Char, p2Char, isHost: this.onlineClient.isHost});
+            
+            // 将角色索引转换为角色类型字符串
+            const p1Type = this.mechaTypes[p1Char];
+            const p2Type = this.mechaTypes[p2Char];
+            
             this.selectedMecha = {
-                player1: this.onlineClient.isHost ? this.onlineSelectedChar : p1Char,
-                player2: this.onlineClient.isHost ? p2Char : this.onlineSelectedChar
+                player1: p1Type,
+                player2: p2Type
             };
+            
+            console.log('[game.js] 角色类型', this.selectedMecha);
+            
             this.gameMode = 'versus';
             this.netMode = 'online'; // 标记为联机对战（输入同步模式）
             this.startGame();

@@ -143,6 +143,20 @@ class OnlineClient {
                 if (this.onCharSelected) this.onCharSelected(msg.player, msg.index);
                 break;
 
+            case 'host_ready':
+                // 客机收到房主的准备消息
+                if (!this.isHost) {
+                    this.remoteCharIndex = msg.charIndex;
+                    this.remoteReady = true;
+                    console.log('[客机] 收到房主准备消息，房主选择的角色:', msg.charIndex);
+                    
+                    // 触发回调，让界面显示"对手已准备"
+                    if (this.onCharSelected) {
+                        this.onCharSelected(1, msg.charIndex);
+                    }
+                }
+                break;
+
             case 'ready':
                 // 客机告诉房主：我已准备，这是我选择的角色
                 if (this.isHost) {
@@ -228,7 +242,11 @@ class OnlineClient {
         this.localReady = true;
         
         if (this.isHost) {
-            // 房主：检查客机是否已准备
+            // 房主：发送准备消息给客机
+            this.send({ type: 'host_ready', charIndex: this.localCharIndex });
+            console.log('[房主] 发送host_ready消息，我选择的角色:', this.localCharIndex);
+            
+            // 检查客机是否已准备
             if (this.remoteReady) {
                 // 双方都准备好了，开始游戏
                 const p1Char = this.localCharIndex;
