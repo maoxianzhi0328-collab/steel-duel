@@ -1,0 +1,40 @@
+# 依赖
+node_modules/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.log
+*.tmp
+
+# 服务器相关（GitHub Pages不需要）
+server.js
+启动联机.bat
+package.json
+package-lock.json
+
+# 设计文档（不部署）
+设计文档/
+*.md
+!README.md
+
+# 开发文档
+CHANGELOG_v2.1.md
+CHANGELOG_v2.2.md
+FIX_PREVIEW.md
+README_MODULAR.md
+bomberman_game_design.md
+bomberman_game_design_doc.html
+game_design_doc.md
+mecha_battle.html
+
+# 方案文档
+小程序改造方案.md
+TapTap发布方案.md
+H5版本改造清单.md
+联机使用说明.md
+
+# Trae临时文件
+.trae-html-share-packages/
