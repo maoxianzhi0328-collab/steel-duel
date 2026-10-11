@@ -616,13 +616,13 @@ class Game {
 
         // 联机输入同步：发送本地输入 + 接收对手输入
         if (isOnline) {
-            this.frameCount = (this.frameCount || 0) + 1;
-            // 每2帧发送一次以减少流量（移动键为持续状态，2帧间隔可接受）
-            if (this.frameCount % 2 === 0) {
-                this.onlineClient.sendInput(this.frameCount, this.keys);
-            }
+            // **优化：使用最新的对手输入，不依赖帧号**
+            
+            // 发送本地输入
+            this.onlineClient.sendInput(this.keys);
+            
             // 接收对手输入
-            const remoteInput = this.onlineClient.getRemoteInput(this.frameCount);
+            const remoteInput = this.onlineClient.getLatestRemoteInput();
             if (remoteInput) {
                 if (this.onlineClient.localPlayerNum === 2) {
                     // 本地是玩家2，对手是玩家1：直接应用WASD到本地按键
@@ -642,7 +642,6 @@ class Game {
                     });
                 }
             }
-            this.onlineClient.cleanupInputs(this.frameCount);
         }
 
         this.handleInput();
