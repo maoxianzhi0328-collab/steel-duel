@@ -346,10 +346,15 @@ class TouchController {
     }
 
     /**
-     * 获取按钮状态
+     * 获取按钮状态（瞬时触发，用后自动清除）
      */
     getButtonState(action) {
-        return this.buttons[action] || false;
+        const state = this.buttons[action] || false;
+        // 如果是瞬时触发的按钮（非防御），用完立即清除
+        if (state && action !== 'defense') {
+            this.buttons[action] = false;
+        }
+        return state;
     }
 
     /**
