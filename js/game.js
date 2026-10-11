@@ -1939,17 +1939,42 @@ class Game {
         const grid = document.getElementById('onlinePlayerGrid');
         if (!grid) return;
         grid.innerHTML = '';
+        
+        // 清理旧的预览器
+        if (this.onlineGridPreviewers) {
+            this.onlineGridPreviewers.forEach(p => p.stopAnimation());
+        }
+        this.onlineGridPreviewers = [];
+
         this.mechaTypes.forEach((type, index) => {
             const config = MECHA_CONFIG[type];
             const cell = document.createElement('div');
             cell.className = 'char-cell';
             cell.dataset.index = index;
-            cell.innerHTML = `
-                <div class="char-cell-name">${config.name}</div>
-                <div class="char-cell-canvas-wrap"><canvas width="50" height="60" class="char-cell-canvas"></canvas></div>
-                <div class="char-cell-type">${this.getMechaTypeText(type)}</div>
-            `;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 30;
+            canvas.height = 34;
+            canvas.className = 'char-cell-canvas';
+
+            const name = document.createElement('div');
+            name.className = 'char-cell-name';
+            name.textContent = config.name;
+
+            const typeDiv = document.createElement('div');
+            typeDiv.className = 'char-cell-type';
+            typeDiv.textContent = this.getMechaTypeText(type);
+
+            cell.appendChild(canvas);
+            cell.appendChild(name);
+            cell.appendChild(typeDiv);
             grid.appendChild(cell);
+
+            // 渲染角色预览
+            const previewer = new MechaPreviewer(canvas);
+            previewer.setType(type);
+            previewer.startAnimation();
+            this.onlineGridPreviewers.push(previewer);
         });
         this.onlineSelectedChar = 0;
         this.updateOnlineGridSelection(0);

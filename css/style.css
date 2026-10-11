@@ -2117,16 +2117,29 @@ canvas {
 
     .online-char-select .char-grid {
         grid-template-columns: repeat(4, 1fr);
-        gap: 4px;
+        gap: 8px;
+        padding: 8px;
     }
 
     .online-char-select .char-cell {
-        width: 60px;
-        height: 75px;
+        width: 70px;
+        height: 85px;
+        padding: 6px;
     }
 
     .online-char-select .char-cell-name {
-        font-size: 9px;
+        font-size: 10px;
+        margin-top: 2px;
+    }
+
+    .online-char-select .char-cell-type {
+        font-size: 8px;
+        margin-top: 1px;
+    }
+
+    .online-char-select .char-cell-canvas {
+        width: 30px;
+        height: 34px;
     }
 
     .leave-room-btn {
